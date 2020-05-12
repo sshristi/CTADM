@@ -1,5 +1,8 @@
 package com.movies.DAO;
 
+import com.movies.model.Rating;
+
 public interface MoviesDAO {
-	public void addMovie(int id,float rate);
+
+	public int addMovieRating(Rating rating);
 }

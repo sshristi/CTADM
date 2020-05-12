@@ -1,5 +1,7 @@
 package com.movies.service;
 
+import com.movies.model.Rating;
+
 public interface MoviesService {
-	void addMovie(int id,float rate);
+	int addMovieRating(Rating rating) throws Exception;
 }
