@@ -1,14 +1,9 @@
 package com.rate.movie.controller;
 
-
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,48 +31,32 @@ public class WebController {
 	    @Autowired
 	    CustomerRepository repositoryC;
 	      
-	    @RequestMapping("/")
-	    public String constructor() {
+	    @RequestMapping()
+	    public String constructor() {                                		//will help you to choose data to enter easily
 	    	int m = repositoryM.findAll().size();
     		int c = repositoryC.findAll().size();
 			return "Total Movies: "+ m + "\n" + 
-   				 "Total Customers: " + c + "\n\n"
-   				 ;
+   				 "Total Customers: " + c + "\n\n";
 		}
 	     
 	    
-	    @RequestMapping("/customer/{cid}/movie/{mid}/rate/{rate}")
+	    @RequestMapping("/customer/{cid}/movie/{mid}/rate/{rate}")          //give customer id, movie id, rating in float
 	    public String addRating(@PathVariable("cid") int cid, @PathVariable("mid") int mid, @PathVariable("rate") float rate) {
-	    	String result="";
 	    	
-	    	Optional<Customer> cust = repositoryC.findById(cid);
-	    	
-	    	Optional<Movie> movie = repositoryM.findById(mid);
+	    	Optional<Customer> cust = repositoryC.findById(cid);      		//finding the customer to give rating
+	    	Optional<Movie> movie = repositoryM.findById(mid);        		//finding movie to add rating
 	    	
 	    	if(!movie.isPresent() || !cust.isPresent()) {
 	    		return "Movie/customer doesn't exist..!";
-	    	}else {
-	    		if(rate>5 || rate <1)
-	    			return "rating should be between 1 to 5.. try again!";
-	    		Rating r = new Rating(cust.get(), movie.get(), rate);
-	    		repositoryR.save(r);
-	    		if(cust.get().getRatings()==null) {
-	    			Set<Rating> set = new HashSet<Rating>();
-	    			set.add(r);
-	    			cust.get().setRatings(set);
-	    		}
-	    		cust.get().getRatings().add(r);
-	    		if(movie.get().getRatings()==null) {
-	    			Set<Rating> set = new HashSet<Rating>();
-	    			set.add(r);
-	    			movie.get().setRatings(set);
-	    		}
-	    		movie.get().getRatings().add(r);
-	    		
-	    		result = "Rating added Successfully...";
 	    	}
-	    	return result;
+	    	if(rate>5 || rate <1)
+	    		return "rating should be between 1 to 5.. try again!";
+	    	
+	    	Rating r = new Rating(cust.get(), movie.get(), rate);
+	    	repositoryR.save(r);
+	    	return "Rating added Successfully...";    	
 	    }
+	    
 	    
 	    @RequestMapping("/highestrated")
 	    public  String findHighestRatedMovie() {
@@ -85,39 +64,42 @@ public class WebController {
 	    	if(list.isEmpty()) {
 	    		return "No Ratings till yet..";
 	    	}
-	    	 Entry<Movie, Long> ent = list.stream()
-	    				.collect(Collectors.groupingBy(Rating::getMovie,Collectors.counting()))
-	    				.entrySet()
-	    				.stream()
-	    				.max(Map.Entry.comparingByValue()).get();
-	    	return ent.getKey().getName();
+	    	 Map<Movie, Double> map = list.stream()           				//to get a map with movies and their average rating
+	    				.collect(Collectors
+	    				.groupingBy(Rating::getMovie,
+	    				Collectors.averagingDouble(e -> e.getRate())));
+	    				
+	    	 String result = map.entrySet()                 				//to find the name of the movie (movie object as a key) having max in average 
+	    					 .stream()
+	    					 .max(Map.Entry.comparingByValue())
+	    					 .get().getKey().getName();
+	    	 
+	    	return "Highest rated movie in average is:  "+ result;
 	    }
 	    
-	    @RequestMapping("/findbyid/{id}")
-	    public String findById(@PathVariable("id") int id){
-	        String result = "";
-	        result = repositoryM.findById(id).toString();
-	        return result;
+	    
+	    @RequestMapping("/customerRatedTheHighest")
+	    public  String findCustomerRatedTheHighest() {
+	    	List<Rating> list = repositoryR.findAll();
+	    	if(list.isEmpty()) {
+	    		return "No Ratings till yet..";
+	    	}
+	    	 Map<Customer, Double> map = list.stream()           			//to get a map with customers and their average rating
+	    				.collect(Collectors
+	    				.groupingBy(Rating::getCustomer,
+	    				Collectors.averagingDouble(e -> e.getRate())));
+	    				
+	    	 Entry<Customer, Double> ent = map.entrySet()                  //to find the name of the customer (customer object as a key) having max in average 
+	    					 .stream()
+	    					 .max(Map.Entry.comparingByValue())
+	    					 .get();
+	    	 
+	    	 Double avg = map.values().stream()
+	    			 .collect(Collectors.averagingDouble(e -> e));         //average of total ratings of customers
+	
+	    	return "{"+ ent.getKey().toString() 
+	    			+ ", \"customerAverageRating\" =  " + ent.getValue()
+	    			+ ", \"averageRating\" =  " + avg + "}";
 	    }
 	      
-	    /*
-		 * @RequestMapping("/findall") public String findAll(){ String result =
-		 * "<html>";
-		 * 
-		 * for(Movie movie : repositoryM.findAll()){ result += "<div>" +
-		 * movie.toString() + "</div>"; }
-		 * 
-		 * return result + "</html>"; }
-		 */
-	    /*@RequestMapping("/findbylastname")
-	    public String fetchDataByLastName(@RequestParam("lastname") String lastName){
-	        String result = "<html>";
-	          
-	        for(Customer cust: repository.findByLastName(lastName)){
-	            result += "<div>" + cust.toString() + "</div>"; 
-	        }
-	          
-	        return result + "</html>";
-	    }*/
-	
 }

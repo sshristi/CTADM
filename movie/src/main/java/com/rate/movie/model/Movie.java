@@ -1,15 +1,10 @@
 package com.rate.movie.model;
 
-import java.util.Set;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -22,12 +17,9 @@ public class Movie {
 	@Column(name = "name")
 	String name;
 	
-	@OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    public static Set<Rating> ratings;
-	
 	@Override
 	public String toString() {
-		return "Movie [m_id=" + m_id + ", name=" + name + ", ratings=" + ratings + "]";
+		return "Movie [m_id=" + m_id + ", name=" + name + "]";
 	}
 
 	public Movie(){
@@ -51,13 +43,5 @@ public class Movie {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public Set<Rating> getRatings() {
-		return ratings;
-	}
-
-	public void setRatings(Set<Rating> ratings) {
-		this.ratings = ratings;
 	}
 }
