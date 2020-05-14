@@ -11,57 +11,77 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
-public class Problem2 {
-
-	public static void main(String[] args) throws IOException {
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));	
-		System.out.println("Enter size:");
-		int n = Integer.parseInt(br.readLine());		
-		Map<String,List<String>> orderList = new HashMap<String,List<String>>();
-		String k;
-		List<String> v;
-		List<String> items = new ArrayList<>();
-		for(int i=0;i<n;i++) {
-			v= new ArrayList<>();
-			StringTokenizer st = new StringTokenizer(br.readLine()," ");		
-			k = st.nextToken();		
-			while(st.hasMoreTokens()) {
-				String x = st.nextToken();
-				v.add(x);		
-				items.add(x);
-			}	
-			orderList.put(k, v);
-		}
-		
-		Map<String,List<String>> itemsList = new HashMap<String,List<String>>();
-		for(String i:items.stream().collect(Collectors.toSet())) {
-			v= new ArrayList<>();
-			for(Entry<String,List<String>> e : orderList.entrySet()) {
-				if(e.getValue().contains(i))
-					v.add(e.getKey());
-			}
-			itemsList.put(i,v);	
-		}
-		
-		Set<Entry<String, Long>> count= items.stream()
-									.collect(Collectors.groupingBy(e->e,Collectors.counting()))
-									.entrySet();
-		String max1 = count.stream()
-				.max(Comparator.comparing(Entry::getValue))
-				.get()
-				.getKey();
-		count.removeIf(entry -> entry.getKey() == max1);	
-		String max2 = count.stream()
-				.max(Comparator.comparing(Entry::getValue))
-				.get()
-				.getKey();
-
-		System.out.println(max1 +" -> usageCount: " +itemsList.get(max1).size()+ ";corresponding orders: " + itemsList.get(max1));
-		System.out.println(max2 +" -> usageCount: " +itemsList.get(max2).size()+ ";corresponding orders: " + itemsList.get(max2));
+class Order{
+	private static int count = 1;
+	private List<String> items;
+	private int orderNo = count;
+	public Order(List<String> items) {
+		super();
+		count++;
+		this.items = items;
 	}
 
+	public List<String> getItems() {
+		return items;
+	}
+
+	public void setItems(List<String> items) {
+		this.items = items;
+	}
+
+	@Override
+	public String toString() {
+		return "Order-" + orderNo;
+	}
+	
+}
+
+public class Problem2{
+	public static void main(String[] args) {
+		Scanner sc  = new Scanner(System.in);
+		List<Order> l = new ArrayList<>();
+		Order order;
+		List<String> list;
+		String ch;
+		do{
+			System.out.println("no. of items: ");
+			int n = sc.nextInt();
+			list = new ArrayList<>();
+			while(n-->0) {
+				list.add(sc.next());
+			}
+			order = new Order(list);
+			l.add(order);
+			System.out.println("want to give order: y/n?");
+			ch = sc.next();
+		}
+		while(ch.equals("y"));
+		
+		List<String> items = new ArrayList<>();
+		l.forEach(e -> e.getItems().forEach(i -> items.add(i)));
+		
+		Map<String,Long> map = items.stream()
+						.collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+		
+		String max1 = map.entrySet().stream()
+				  .max(Comparator.comparing(Entry::getValue)).get().getKey();
+		List<String> max1Orders = new ArrayList<>();
+		l.forEach(e ->{if(e.getItems().contains(max1)) max1Orders.add(e.toString());});
+		System.out.println(max1 +" -> usageCount: " +map.get(max1)+";corresponding orders: " + max1Orders);
+		
+		map.entrySet().removeIf(entry -> entry.getKey() == max1);
+		
+		String max2 = map.entrySet().stream() 
+				.max(Comparator.comparing(Entry::getValue)).get().getKey();
+		List<String> max2Orders = new ArrayList<>();
+		l.forEach(e ->{if(e.getItems().contains(max2)) max2Orders.add(e.toString());});
+		System.out.println(max2+" -> usageCount: " +map.get(max2)+ ";corresponding orders: " + max2Orders);
+	
+	}
+	
 }
