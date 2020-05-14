@@ -1,41 +1,41 @@
 package problems;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Problem1 {
 
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
+		int n=0;
+		System.out.println("Enter size of the array: ");
+		n = sc.nextInt();
+		System.out.println("Enter Array elements: ");
+		List<Integer> l = new ArrayList<Integer>();
+		for(int q=0;q<n;q++)
+			l.add(sc.nextInt());
+		Map<Integer, Integer> map = l.parallelStream()
+					.collect(Collectors.toConcurrentMap(w -> w, w -> 1, Integer :: sum))
+					.entrySet()
+					.stream()
+					.sorted(Map.Entry.comparingByValue())
+					.collect(Collectors.toMap(Map.Entry::getKey,
+				               Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+		l.clear();
+		map.forEach((k,v) ->{
+			while(v-->0) {
+				l.add(k);
+			} 
+		} );
 		
-		/*
-		 * int n=0;System.out.println("Enter size of the array: "); n = sc.nextInt();
-		 */
-		int array[] = new int[8];   //assuming size to be 8
-		for(int i=0;i<8;i++) {
-			array[i]=sc.nextInt();
-		}
-		for(int i=0 ; i<7 ;i++) {
-			for(int j=i+1;j<8;j++) {
-				if(array[i]==array[j]) {
-					int t = array[j];
-					int k=j;
-					for(;k<7;k++) {
-						array[k]=array[k+1];
-					}
-					array[k]=t;	
-					
-				}
-				
-			}
-			for(int f=0;f<8;f++) {
-				System.out.print(array[f]+" ");
-			}
-			System.out.println();
-		}
 		
-
+		System.out.println(l);
 		
+			
 	}
 
 }
